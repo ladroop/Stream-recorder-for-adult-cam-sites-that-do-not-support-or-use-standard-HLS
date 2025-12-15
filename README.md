@@ -6,14 +6,14 @@
 
 it works on:
 
-stripchat.com
+www.stripchat.com
 www.manyvids.com
 www.livejasmin.com
 www.xcams.com
 www.secretfriends.com
 www.soulcams.com
 www.cameraprive.com
-showup.tv
+www.showup.tv
 
 after ~6 seconds a little panel will occur with stop/record and preview
 Just click the rec button to start recording and click again to pauze and stop to save it to disk.
