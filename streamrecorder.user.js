@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Stream recorder for adult cam sites that do not support HLS
 // @namespace    Everywhere
-// @version      1.0.6
+// @version      1.0.7
 // @description  Record stripchat, livejasmin and other cam sites that do not full support HLS/m3u8
 // @author       Ladroop
 // @license	     MIT
@@ -191,7 +191,7 @@
         count=0;
         recordedBlobs = [];
         try {
-            mediaRecorder = new MediaRecorder(stream,{mimeType:'video/webm codecs="vp8" opus'});
+            mediaRecorder = new MediaRecorder(stream);
         } catch (e) {
             msg("Not supported");
             status="stop";
