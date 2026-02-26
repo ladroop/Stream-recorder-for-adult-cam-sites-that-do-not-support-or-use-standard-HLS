@@ -43,5 +43,3 @@ known problems:
 If you have an other configuration .. just try it.
 
 
-These 2 scrips together cover all for me known major camsites.
-if you're on an other site it's most likely just a clone of one of the sites.
