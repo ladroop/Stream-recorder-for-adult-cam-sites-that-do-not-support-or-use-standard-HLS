@@ -13,7 +13,7 @@ www.soulcams.com
 www.cameraprive.com
 showup.tv
 
--After ~6 seconds a little panel will occur with stop/record and preview
+-After ~6 seconds a little panel will occur with stop/record and preview.
 -Just click the rec button to start recording and click again to pauze and stop to save it to disk.
 -With a mouse pull you can move the little panel to an other place.
 -If you right click the preview video you can go full screen, picture in picture and make a snapshot.
