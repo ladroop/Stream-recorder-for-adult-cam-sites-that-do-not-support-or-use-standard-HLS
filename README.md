@@ -14,14 +14,23 @@ www.cameraprive.com
 showup.tv
 
 -After ~6 seconds a little panel will occur with stop/record and preview.
+
 -Just click the rec button to start recording and click again to pauze and stop to save it to disk.
+
 -With a mouse pull you can move the little panel to an other place.
+
 -If you right click the preview video you can go full screen, picture in picture and make a snapshot.
+
 -If you turn autosave on it will save the recordings every 20 minutes to disk.
+
 -When autosave is on it will also resume the recording if it stopped on errors in the stream.
+
 -Recordings under 10 seconds are not saved to disk.
+
 -It saves without dialog , also with firefox.
+
 -It will use the browsers default codec,
+
 For Firefox this is "video/webm , vp80 opus"
 For Chrome this is "video/mp4 , vp9 opus"
 If acv3 is available (chrome) you have a selector to use 'video/mp4; codecs="avc3.64001F, mp4a.40.2"'.
@@ -36,7 +45,7 @@ How to make the best recordings:
 In Firefox you can prevent this by opening picture in picture (this trick does not work in chrome ..)
 
 known problems:
--On some sites (e.g. xcams) the recording does not stop if the video goes offline.
+-If a stream is offline or goes offline you may need to refresh the page when the stream is back.
 -Manyvids does not record sound. (blame manyvids)
 
 -This script is made with tampermonkey with chrome and with firefox
