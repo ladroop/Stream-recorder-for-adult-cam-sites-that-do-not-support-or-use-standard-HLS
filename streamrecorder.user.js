@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Stream recorder for adult cam sites that do not support HLS
 // @namespace    Everywhere
-// @version      1.1.0
+// @version      1.1.1
 // @description  Record stripchat, livejasmin and other cam sites that do not full support HLS/m3u8
 // @author       Ladroop
 // @license	     MIT
@@ -17,8 +17,8 @@
 // @noframes
 // @run-at       document-end
 // @grant        GM_download
-// @downloadURL https://openuserjs.org/install/ladroop2/Stream_recorder_for_adult_cam_sites_that_do_not_support_HLS.user.js
-// @updateURL https://openuserjs.org/meta/ladroop2/Stream_recorder_for_adult_cam_sites_that_do_not_support_HLS.meta.js
+// @downloadURL https://update.sleazyfork.org/scripts/508891/Stream%20recorder%20for%20adult%20cam%20sites%20that%20do%20not%20support%20HLS.user.js
+// @updateURL https://update.sleazyfork.org/scripts/508891/Stream%20recorder%20for%20adult%20cam%20sites%20that%20do%20not%20support%20HLS.meta.js
 // ==/UserScript==
 
 
@@ -84,6 +84,7 @@
     var timeoutID2=0;
     var timeoutID3=0;
     var savetime=20;
+    var zeroData=0;
     var mimeType=['video/mp4',
                   'video/webm',
                   'video/webm'];
@@ -126,7 +127,6 @@
 
     function getrecname(){
         var name="video";
-
         if (site=="livejasmin"){
             if (location.indexOf("chat")==-1){return;}
             name=location.split("/")[location.split("/").length-1];
@@ -194,6 +194,11 @@
             dlready();
             return;
         }
+        if (recordedBlobs.length <3){
+            stopPressed=true;
+            dlready();
+            return;
+        }
         status="saving";
         msg("Saving");
         blob = new Blob(recordedBlobs, {type: container[n]});
@@ -225,16 +230,12 @@
 
     function startRecording() {
         if (mediarecorderInit){recordStart();return;}
-        var bitRate=video.videoHeight*video.videoWidth*3;
-        if (bitRate> 8000000){bitRate=8000000;}
         type=mimeType[n];
         if (document.getElementById("avc3").value==1){
             type='video/mp4; codecs="avc3.64001F, mp4a.40.2"';
         }
         mediaRecorder = new MediaRecorder(stream,{
-            mimeType:type,
-            VideobitsPerSecond: bitRate,
-            AudiobitsPerSecond: 64000
+            mimeType:type
         });
         mediaRecorder.onstop = mediaRecorderStopped;
         mediaRecorder.ondataavailable = handleDataAvailable;
@@ -246,6 +247,7 @@
         starttime="_"+new Date().toISOString().split(".")[0]+"GMT";
         starttime=starttime.replaceAll(":","_");
         rectime=0;
+        zeroData=0;
         stopPressed=false;
         status="rec";
         document.getElementById("recbutton").style.display="none";
@@ -261,16 +263,31 @@
             setTimeout(function(){msg("Stopped");},3000);
             return;
         }
+        timeoutID3=setTimeout(stoprecord,10000);
         clearTimeout(timeoutID);
         timedisplay();
     }
 
     function handleDataAvailable(event) {
+        console.log(event);
         clearTimeout(timeoutID3);
-        if (event.data && event.data.size > 0) {
-            recordedBlobs.push(event.data);
+        if (event.data){
+            if (event.data.size){
+                if (event.data.size>0){
+                    recordedBlobs.push(event.data);
+                    zeroData=0;
+                }else{
+                    zeroData++;
+                }
+            }else{
+                zeroData++;
+            }
         }
-        timeoutID3=setTimeout(stoprecord,100000);
+        if (zeroData>10){
+            stoprecord();
+            return;
+        }
+        timeoutID3=setTimeout(stoprecord,10000);
     }
 
     function mediaRecorderStopped(){
@@ -337,6 +354,7 @@
     function msg(message){
         document.getElementById("message123").innerHTML=message;
     }
+
 
     function makepopitup(){
         var popstyle="font-family: monospace;font-size: 12px;color:black;z-index:100000;top:100px;left:10px;box-shadow:0px 0px 32px rgba(0, 0, 0, 0.32);border-radius:4px;border:1px solid rgb(221, 221, 221);background-color:rgb(200, 200, 200);position:fixed; display:inline-block; height: auto; width:auto; padding: 6px 6px 6px 6px;";
@@ -445,4 +463,5 @@
         document.onmouseup = null;
         document.onmousemove = null;
     }
+
 })();
