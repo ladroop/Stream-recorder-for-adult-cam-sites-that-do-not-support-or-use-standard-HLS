@@ -1,19 +1,17 @@
-
-
 Adds a record button to adult webcam sites that do not support HLS or use non standard HLS
 
 it works on:
 
-stripchat.com,
-www.manyvids.com,
-www.livejasmin.com,
-www.xcams.com,
-www.secretfriends.com,
-www.soulcams.com,
-www.cameraprive.com,
+stripchat.com
+www.manyvids.com
+www.livejasmin.com
+www.xcams.com
+www.secretfriends.com
+www.soulcams.com
+www.cameraprive.com
 showup.tv
 
--After ~6 seconds a little panel will occur with stop/record and preview.
+-If the script detects live video op the page a little panel will occur after ~6 seconds with stop/record and preview.
 
 -Just click the rec button to start recording and click again to pauze and stop to save it to disk.
 
@@ -21,28 +19,29 @@ showup.tv
 
 -If you right click the preview video you can go full screen, picture in picture and make a snapshot.
 
--If you turn autosave on it will save the recordings every 20 minutes to disk.
+-If you turn autosave on it will save the recordings every 20 minutes to disk and then resume recording.
 
--When autosave is on it will also resume the recording if it stopped on errors in the stream.
+-If the recording stops due to an error in the stream it will save to disk and try to resume the recording after 10 seconds.
+if that fails it stops.
+
+-It will show the amount of parts it recorded (due to autosave or errors) and the total record time.
 
 -Recordings under 10 seconds are not saved to disk.
 
+-If the recorder looses the connection with the stream then press the reconnect symbol in the top right of the video.
+(this may happen if the stream goes offline and comes back later, the preview will then be black or frozen)
+
 -It saves without dialog , also with firefox.
 
--It will use the browsers default codec,
+-In firefox it will use the "video/webm , vp8.0 opus" codec.
 
-For Firefox this is "video/webm , vp80 opus"
+-In chrome it will use the 'video/mp4; codecs="avc3.64001F, mp4a.40.2"' codec.
 
-For Chrome this is "video/mp4 , vp9 opus"
+-In chrome you have a switch "use avc3". If you turn it off it will use the "video/mp4 , vp9 opus" codec.
+(acv3 is a better codec (smaller files) but can give problems if your computer is a bit slow , you just have to try it.
+And a better codec will not always say that it's a better quality video.)
 
-If acv3 is available (chrome) you have a selector to use 'video/mp4; codecs="avc3.64001F, mp4a.40.2"'.
-
-acv3 is a better codec (smaller files) but can give problems if your computer is a bit slow , you just have to try it.
-
-And a better codec will not always say that it's a better quality video.
-
--If you have no sound in firefox and you can not unmute it in the main video then click the mute icon in the preview.
-
+-If you have no sound in firefox and you can not unmute it in the main video then click the mute icon in top left the preview.
 After that the audio in the main video will work again (that's a firefox bug).
 
 How to make the best recordings:
@@ -50,17 +49,10 @@ How to make the best recordings:
 -If the player got a resolution selector then select a fixed resolution (not auto).
 
 -If you go to an other tab during the recording the site may fall back to a lower resolution.
-
 In Firefox you can prevent this by opening picture in picture (this trick does not work in chrome ..)
 
 known problems:
-
--If a stream is offline or goes offline you may need to refresh the page when the stream is back.
-
 -Manyvids does not record sound. (blame manyvids)
 
 -This script is made with tampermonkey with chrome and with firefox
-
 If you have an other configuration .. just try it.
-
-
