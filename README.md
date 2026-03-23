@@ -11,7 +11,7 @@ www.soulcams.com
 www.cameraprive.com
 showup.tv
 
--If the script detects live video op the page a little panel will occur after ~6 seconds with stop/record and preview.
+-If the script detects live video on the page a little panel will occur after ~6 seconds with stop/record and preview.
 
 -Just click the rec button to start recording and click again to pauze and stop to save it to disk.
 
