@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Stream recorder for adult cam sites that do not support HLS
 // @namespace    Everywhere
-// @version      1.1.1
+// @version      1.1.2
 // @description  Record stripchat, livejasmin and other cam sites that do not full support HLS/m3u8
 // @author       Ladroop
 // @license	     MIT
@@ -21,11 +21,10 @@
 // @updateURL https://update.sleazyfork.org/scripts/508891/Stream%20recorder%20for%20adult%20cam%20sites%20that%20do%20not%20support%20HLS.meta.js
 // ==/UserScript==
 
-
 (function() {
     'use strict';
 
-   var recbutton='<svg fill="#000000" version="1.1" id="recbutton" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" width="50px" height="50px" viewBox="0 0 50 50" xml:space="preserve" style="cursor:pointer;display:inline-block">'+
+      var recbutton='<svg fill="#000000" version="1.1" id="recbutton" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" width="50px" height="50px" viewBox="0 0 50 50" xml:space="preserve" style="cursor:pointer;display:inline-block">'+
        '<g><g>'+
 		'<path d="M0,18.961h4.842V6.052c0-0.446,0.362-0.807,0.807-0.807H18.56V0.404H5.649C2.535,0.404,0,2.939,0,6.053V18.961z"/>'+
 		'<path d="M39.539,0.403h-12.91v4.841h12.91c0.445,0,0.807,0.362,0.807,0.807v12.91h4.842V6.052    C45.189,2.938,42.654,0.403,39.539,0.403z"/>'+
@@ -64,41 +63,57 @@
         '<rect fill="#111111" x="25" y="10"  width="10" height="25"><animate attributeName="fill" values="#ff0000;#111111" begin="0s" dur="2s" calcMode="discrete" repeatCount="indefinite"/></rect>'+
         '</g></g></svg>';
 
-    var status="stop";
-    var recName="";
+
     var site=document.location.href.split("/")[2].split(".");
     site=site[site.length-2];
     var location="";
-    var mediaRecorder;
-    var recordedBlobs=[];
-    var stream;
-    var video;
-    var blob;
     var vidObj=0;
     var firefox=false;
-    var starttime="";
-    var rectime=0;
-    var stopPressed=false;
-    var mediarecorderInit=false;
-    var timeoutID=0;
+    var video="";
     var timeoutID2=0;
-    var timeoutID3=0;
+    var stream="";
+
+    var recording=false;
+    var recpause=false;
+    var recwait=false;
+
+    var mediaRecorder;
+    var recordedBlobs=[];
+    var recname="";
+    var stoppressed=false;
+    var timerrecstop=false;
+    var reconnect=false;
     var savetime=20;
+    var rectime=0;
+    var recparts=1;
+    var recTimeoutID=0;
     var zeroData=0;
-    var mimeType=['video/mp4',
-                  'video/webm',
-                  'video/webm'];
-    var extention=['.mp4',
-                   '.webm',
-                   '.webm'];
-    var container=['video/mp4',
-                   'video/webm',
+
+    var prectime=0;
+    var bitrate=2500000;
+    var mimeTypes=['video/mp4; codecs="avc3.64001F, mp4a.40.2"',
+                   'video/mp4; codecs="vp9, opus"',
+                   'video/webm; codecs="vp9, opus"',
+                   'video/webm; codecs="vp8.0, opus"',
                    'video/webm'];
-    var n=0;
-    for(n=0;n < mimeType.length-1;n++) {
-        if (MediaRecorder.isTypeSupported(mimeType[n])){break;}
+    var extentions=['.mp4',
+                    '.mp4',
+                    '.webm',
+                    '.webm',
+                    '.webm'];
+    var vidcontainers=['video/mp4',
+                       'video/mp4',
+                       'video/webm',
+                       'video/webm',
+                       'video/webm'];
+    var mimeType=0;
+    for(mimeType=0;mimeType < mimeTypes.length-1;mimeType++) {
+        if (MediaRecorder.isTypeSupported(mimeTypes[mimeType])){break;}
     }
-    var type="";
+    var pos1=0;
+    var pos2=0;
+    var pos3=0;
+    var pos4=0;
 
     setInterval(pagechange1,1000);
 
@@ -106,16 +121,15 @@
         if (document.location.href==location){return;}
         location=document.location.href;
         clearTimeout(timeoutID2);
-        clearTimeout(timeoutID3);
-        stopPressed=true;
-        if ((status=="rec")||(status=="pauze")){
+        if (recording){
+            stoppressed=true;
             stoprecord();
         }
         pagechange();
     }
 
     function pagechange(){
-        if (status != "stop"){
+        if (recording){
             setTimeout(pagechange,1000);
             return;
         }
@@ -135,6 +149,7 @@
 
         if (site=="stripchat"){
             name=location.split("/")[3].split("?")[0];
+
         }
 
         if (site=="showup"){
@@ -167,7 +182,7 @@
             name=location.split("/")[5];
         }
 
-        recName=site+"-"+name;
+        recname=site+"-"+name;
 
         timeoutID2=setTimeout(findvideo,6000);
     }
@@ -175,102 +190,98 @@
     function findvideo(){
         if (document.getElementsByTagName("video").length > vidObj){
             video=document.getElementsByTagName("video")[vidObj];
-            if (video.srcObject==null){
-                if (video.src.indexOf("blob:")==-1){return;}
+            if (video.srcObject!=null){
+                getStream();
+                return;
             }
+            if (video.querySelector("source")){
+                if (video.querySelector("source").src.indexOf("blob:")!=-1){
+                    getStream();
+                    return;
+                }
+            }
+            if (video.src.indexOf("blob:")!=-1){
+                getStream();
+                return;
+            }
+            return;
+        }
+        if (reconnect){
             getStream();
         }
     }
 
     function getStream(){
+        reconnect=false;
         stream = video.captureStream ? video.captureStream() : video.mozCaptureStream();
         if (!video.captureStream){firefox=true;}
         makepopitup();
         document.getElementById("minivideo").srcObject=stream;
     }
 
-    function autosave(){
-        if (rectime<10){
-            dlready();
-            return;
-        }
-        if (recordedBlobs.length <3){
-            stopPressed=true;
-            dlready();
-            return;
-        }
-        status="saving";
-        msg("Saving");
-        blob = new Blob(recordedBlobs, {type: container[n]});
-        GM_download({
-            url: blob,
-            name: recName+starttime+extention[n],
-            onload: dlready,
-        });
-    }
-
-    function dlready(){
-        blob="";
-        recordedBlobs=[];
-        status="stop";
-        if((document.getElementById("autosave").value==1)&&(stopPressed==false)){
-            if(rectime<savetime*60){
-                msg("Waiting");
-                setTimeout(startRecording,5000);
-                return;
-            }
-            startRecording();
-            return;
-        }
-        msg("Stopped");
+    function stoprecord(){
+        if (!recording){return;}
+        if (recwait){return;}
+        stoppressed=true;
         document.getElementById("recbutton").style.display="inline-block";
         document.getElementById("pauzebutton").style.display="none";
         document.getElementById("pauzerecbutton").style.display="none";
+        mediaRecorder.stop();
     }
 
-    function startRecording() {
-        if (mediarecorderInit){recordStart();return;}
-        type=mimeType[n];
-        if (document.getElementById("avc3").value==1){
-            type='video/mp4; codecs="avc3.64001F, mp4a.40.2"';
-        }
-        mediaRecorder = new MediaRecorder(stream,{
-            mimeType:type
-        });
-        mediaRecorder.onstop = mediaRecorderStopped;
-        mediaRecorder.ondataavailable = handleDataAvailable;
-        mediarecorderInit=true;
-        recordStart();
-    }
-
-    function recordStart(){
-        starttime="_"+new Date().toISOString().split(".")[0]+"GMT";
-        starttime=starttime.replaceAll(":","_");
-        rectime=0;
-        zeroData=0;
-        stopPressed=false;
-        status="rec";
+    function startrecord(){
+        if (recording){return;}
         document.getElementById("recbutton").style.display="none";
         document.getElementById("pauzebutton").style.display="inline-block";
+        recstart();
+    }
+
+    function pauzerecord(){
+        if (recwait){return;}
+        clearTimeout(recTimeoutID);
+        recpause=true;
+        document.getElementById("pauzebutton").style.display="none";
+        document.getElementById("pauzerecbutton").style.display="inline-block";
+        mediaRecorder.pause();
+    }
+
+    function resumerecord(){
+        recpause=false;
+        document.getElementById("pauzebutton").style.display="inline-block";
+        document.getElementById("pauzerecbutton").style.display="none";
+        mediaRecorder.resume();
+    }
+
+    function recstart(){
+        mediaRecorder = new MediaRecorder(stream,{
+            mimeType:mimeTypes[mimeType],
+            videoBitsPerSecond: bitrate
+        });
+        mediaRecorder.onstop = autosave;
+        mediaRecorder.ondataavailable = handleDataAvailable;
+        recording=true;
+        timedisplay();
+        recstart2();
+    }
+
+    function recstart2(){
+        prectime=0;
+        recwait=false;
+        recpause=false;
+        clearTimeout(recTimeoutID);
+        var starttime="_"+new Date().toISOString().split(".")[0]+"GMT";
+        starttime=starttime.replaceAll(":","-");
+        recname=recname+"_"+starttime;
         try {
             mediaRecorder.start(1000);
         } catch (e) {
-            msg("Error");
-            status="stop";
-            document.getElementById("recbutton").style.display="inline-block";
-            document.getElementById("pauzebutton").style.display="none";
-            document.getElementById("pauzerecbutton").style.display="none";
-            setTimeout(function(){msg("Stopped");},3000);
+            endrecord();
             return;
         }
-        timeoutID3=setTimeout(stoprecord,10000);
-        clearTimeout(timeoutID);
-        timedisplay();
     }
 
     function handleDataAvailable(event) {
-        console.log(event);
-        clearTimeout(timeoutID3);
+        clearTimeout(recTimeoutID);
         if (event.data){
             if (event.data.size){
                 if (event.data.size>0){
@@ -287,74 +298,104 @@
             stoprecord();
             return;
         }
-        timeoutID3=setTimeout(stoprecord,10000);
-    }
-
-    function mediaRecorderStopped(){
-        clearTimeout(timeoutID3);
-        document.getElementById("recbutton").style.display="inline-block";
-        document.getElementById("pauzebutton").style.display="none";
-        document.getElementById("pauzerecbutton").style.display="none";
-        autosave();
-    }
-
-    function stoprecord(){
-        if (status=="stop"){return;}
-        if (status=="saving"){return;}
-        stopPressed=true;
-        mediaRecorder.stop();
-    }
-
-    function startrecord(){
-        if (status!="stop"){return;}
-        mediarecorderInit=false;
-        startRecording();
-    }
-
-    function pauzerecord(){
-        status="pauze";
-        mediaRecorder.pause();
-        document.getElementById("pauzebutton").style.display="none";
-        document.getElementById("pauzerecbutton").style.display="inline-block";
-    }
-
-    function resumerecord(){
-        status="rec";
-        mediaRecorder.resume();
-        document.getElementById("pauzebutton").style.display="inline-block";
-        document.getElementById("pauzerecbutton").style.display="none";
+        if (!recpause){
+            if(!recwait){
+                recTimeoutID=setTimeout(stoprecord,10000);
+            }
+        }
     }
 
     function timedisplay(){
-        if (status=="rec"){
-            if ((document.getElementById("autosave").value==1)&&(rectime>savetime*60)){
+        if (recording){
+            setTimeout(timedisplay,1000);
+            if(!recpause){
+                if(!recwait){
+                    var h = Math.floor(rectime / 3600);
+                    var H=("0"+h).substr(-2);
+                    var m = Math.floor(rectime % 3600 / 60);
+                    var M=("0"+m).substr(-2);
+                    var s = Math.floor(rectime % 3600 % 60);
+                    var S=("0"+s).substr(-2);
+                    msg("REC("+recparts+"): "+H+":"+M+":"+S);
+                    rectime++;
+                    prectime++;
+                }
+            }
+             if (prectime==savetime*60){
+                timerrecstop=true;
                 mediaRecorder.stop();
-                return;
             }
-            var h = Math.floor(rectime / 3600);
-            var H=("0"+h).substr(-2);
-            var m = Math.floor(rectime % 3600 / 60);
-            var M=("0"+m).substr(-2);
-            var s = Math.floor(rectime % 3600 % 60);
-            var S=("0"+s).substr(-2);
-            msg("Rec.&nbsp"+H+"h&nbsp"+M+"m&nbsp"+S+"s");
-            rectime++;
         }
-        timeoutID=setTimeout(function(){
-            if (status != "stop"){
-                timedisplay();
+    }
+
+    function autosave(){
+        recwait=true;
+        clearTimeout(recTimeoutID);
+        if (prectime<10){
+            dlready();
+            return;
+        }
+        if (recordedBlobs.length <3){
+            stoppressed=true;
+            dlready();
+            return;
+        }
+
+        msg("SAVING");
+        var blob = new Blob(recordedBlobs, {type: vidcontainers[mimeType]});
+        GM_download({
+            url: blob,
+            name: recname+extentions[mimeType],
+            onload: dlready,
+        });
+    }
+
+    function dlready(){
+        recordedBlobs=[];
+        if(stoppressed==false){
+            recparts++;
+            if (timerrecstop==false){
+                    msg("WAITING");
+                    setTimeout(recstart2,10000);
+                    return;
             }
-        },1000);
+            timerrecstop=false;
+            recstart2();
+            return;
+        }else{
+            endrecord();
+        }
+    }
+
+    function endrecord(){
+        document.getElementById("recbutton").style.display="inline-block";
+        document.getElementById("pauzebutton").style.display="none";
+        document.getElementById("pauzerecbutton").style.display="none";
+        msg("Stopped");
+        recparts=1;
+        rectime=0;
+        recording=false;
+        recpause=false;
+        recwait=false;
+        timerrecstop=false;
+        stoppressed=false;
+    }
+
+    function connect(){
+        if (recording){return;}
+        reconnect=true;
+        document.getElementById("popitup1").remove();
+        setTimeout(findvideo,800);
     }
 
     function miniunmute(){
         document.getElementById("minivideo").muted=false;
         document.getElementById("minimute").style.display="none";
     }
+
     function msg(message){
         document.getElementById("message123").innerHTML=message;
     }
-
 
     function makepopitup(){
         var popstyle="font-family: monospace;font-size: 12px;color:black;z-index:100000;top:100px;left:10px;box-shadow:0px 0px 32px rgba(0, 0, 0, 0.32);border-radius:4px;border:1px solid rgb(221, 221, 221);background-color:rgb(200, 200, 200);position:fixed; display:inline-block; height: auto; width:auto; padding: 6px 6px 6px 6px;";
@@ -371,15 +412,15 @@
         newdiv.style.position="relative";
         newdiv.style.width="100%";
         newdiv.style.height="20px";
-         newdiv.innerHTML="<span>Autosave:</span><span style='float:right;position: absolute; right: 5px; top:1px;'><input type='range' id='autosave' min=0 max=1 value=0 style='width: 40px;height:11px;cursor: pointer;zoom:0.8'></span>";
+        newdiv.innerHTML="<span>Autosave:</span><span style='float:right;position: absolute; right: 5px; top:1px;'><input type='range' id='autosave' min=0 max=1 value=1 style='width: 40px;height:11px;cursor: pointer;zoom:0.8'></span>";
         newelem.appendChild(newdiv);
         newdiv=document.createElement('div');
         newdiv.style.position="relative";
         newdiv.style.width="100%";
         newdiv.style.height="20px";
-        newdiv.innerHTML="<span>Use avc3:</span><span style='float:right;position: absolute; right: 5px; top:1px;'><input type='range' id='avc3' min=0 max=1 value=0 style='width: 40px;height:11px;cursor: pointer;zoom:0.8'></span>";
+        newdiv.innerHTML="<span>Use avc3:</span><span style='float:right;position: absolute; right: 5px; top:1px;'><input type='range' id='avc3' min=0 max=1 value=1 style='width: 40px;height:11px;cursor: pointer;zoom:0.8'></span>";
         newdiv.style.display="none";
-        if (MediaRecorder.isTypeSupported('video/mp4; codecs="avc3.64001F, mp4a.40.2"')){
+        if (mimeType==0){
           newdiv.style.display="block";
         }
         newelem.appendChild(newdiv);
@@ -405,6 +446,16 @@
             newdiv.addEventListener("click",miniunmute);
             newdiv2.appendChild(newdiv);
         }
+        newdiv=document.createElement('div');
+        newdiv.innerHTML="🔄";
+        newdiv.id="reconnect";
+        newdiv.style.position="absolute";
+        newdiv.style.zIndex="100001";
+        newdiv.style.top="0px";
+        newdiv.style.right="0px";
+        newdiv.style.cursor="pointer";
+        newdiv.addEventListener("click",connect);
+        newdiv2.appendChild(newdiv);
         newdiv=document.createElement('video');
         newdiv.style.position="relative";
         newdiv.style.width="120px";
@@ -426,12 +477,23 @@
         document.getElementById("stopbutton").addEventListener("click",stoprecord);
         document.getElementById("pauzerecbutton").addEventListener("click",resumerecord);
         document.getElementById("pauzebutton").addEventListener("click",pauzerecord);
+        document.getElementById("autosave").addEventListener("change",savetimeset);
+        document.getElementById("avc3").addEventListener("change",codecset);
     }
 
-    var pos1=0;
-    var pos2=0;
-    var pos3=0;
-    var pos4=0;
+    function savetimeset(){
+        savetime=20;
+        if(document.getElementById("autosave").value==0){
+            savetime=200000;
+        }
+    }
+
+    function codecset(){
+        mimeType=0;
+        if(document.getElementById("avc3").value==0){
+            mimeType=1;
+        }
+    }
 
     function dragMouseDown(e) {
         e = e || window.event;
