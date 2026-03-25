@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Stream recorder for adult cam sites that do not support HLS
 // @namespace    Everywhere
-// @version      1.1.2
+// @version      1.1.3
 // @description  Record stripchat, livejasmin and other cam sites that do not full support HLS/m3u8
 // @author       Ladroop
 // @license	     MIT
@@ -93,17 +93,14 @@
     var bitrate=2500000;
     var mimeTypes=['video/mp4; codecs="avc3.64001F, mp4a.40.2"',
                    'video/mp4; codecs="vp9, opus"',
-                   'video/webm; codecs="vp9, opus"',
-                   'video/webm; codecs="vp8.0, opus"',
+                   'video/webm;',
                    'video/webm'];
     var extentions=['.mp4',
                     '.mp4',
                     '.webm',
-                    '.webm',
                     '.webm'];
     var vidcontainers=['video/mp4',
                        'video/mp4',
-                       'video/webm',
                        'video/webm',
                        'video/webm'];
     var mimeType=0;
