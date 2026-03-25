@@ -76,3 +76,7 @@ avc1 can't handle resolution changes during the recording , and that may happen 
 
 so in chrome you must specify a codec.
 
+And chrome got no problem with a missing audio track.
+
+
+
