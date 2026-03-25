@@ -66,7 +66,7 @@ Firefox supports only one codec ,'video/webm , vp8'
 
 If you don't specify a codec it will ofc use that codec.
 
-if specify a codec and also an audio codec , 'video/webm , vp8 opus' but you want to record a stream that got no audio track the recorder will never become active (and no errors or warnings).
+if you specify a codec and also an audio codec , 'video/webm , vp8 opus' but you want to record a stream that got no audio track the recorder will never become active (and no errors or warnings).
 
 so it's best to use no codec specification and just use 'video/webm'.
 
