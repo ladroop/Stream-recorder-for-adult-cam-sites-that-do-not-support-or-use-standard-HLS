@@ -33,7 +33,7 @@ if that fails it stops.
 
 -It saves without dialog , also with firefox.
 
--In firefox it will use the "video/webm , vp8.0 opus" codec.
+-In firefox it will use the default codec , this is "video/webm , vp8 opus".
 
 -In chrome it will use the 'video/mp4; codecs="avc3.64001F, mp4a.40.2"' codec.
 
@@ -43,6 +43,7 @@ And a better codec will not always say that it's a better quality video.)
 
 -If you have no sound in firefox and you can not unmute it in the main video then click the mute icon in top left the preview.
 After that the audio in the main video will work again (that's a firefox bug).
+(firefox fixed this in version 149.0)
 
 How to make the best recordings:
 
@@ -56,3 +57,22 @@ known problems:
 
 -This script is made with tampermonkey with chrome and with firefox
 If you have an other configuration .. just try it.
+
+---
+
+This is github so some tech information: 
+
+Firefox supports only one codec ,'video/webm , vp8'
+
+If you don't specify a codec it will ofc use that codec.
+
+if specify a codec and also an audio codec , 'video/webm , vp8 opus' but you want to record a stream that got no audio track the recorder will never become active (and no errors or warnings).
+
+so it's best to use no codec specification and just use 'video/webm'.
+
+chrome supports a lot of codec's but if you don't specify a codec it will use "video/mp4 avc1".
+
+avc1 can't handle resolution changes during the recording , and that may happen if you record live streams.
+
+so in chrome you must specify a codec.
+
