@@ -35,9 +35,9 @@ if that fails it stops.
 
 -In firefox it will use the default codec , this is "video/webm , vp8 opus".
 
--In chrome it will use the 'video/mp4; codecs="avc3.64001F, mp4a.40.2"' codec.
+-In chrome and opera it will use the 'video/mp4; codecs="avc3.64001F, mp4a.40.2"' codec.
 
--In chrome you have a switch "use avc3". If you turn it off it will use the "video/mp4 , vp9 opus" codec.
+-In chrome and opera you have a switch "use avc3". If you turn it off it will use the "video/mp4 , vp9 opus" codec.
 (acv3 is a better codec (smaller files) but can give problems if your computer is a bit slow , you just have to try it.
 And a better codec will not always say that it's a better quality video.)
 
@@ -55,7 +55,7 @@ In Firefox you can prevent this by opening picture in picture (this trick does n
 known problems:
 -Manyvids does not record sound. (blame manyvids)
 
--This script is made with tampermonkey with chrome and with firefox
+-This script is made with tampermonkey with chrome and with firefox and also tested with violentmonkey and opera
 If you have an other configuration .. just try it.
 
 ---
@@ -70,7 +70,7 @@ if you specify a codec and also an audio codec , 'video/webm , vp8 opus' but you
 
 so it's best to use no codec specification and just use 'video/webm'.
 
-chrome supports a lot of codec's but if you don't specify a codec it will use "video/mp4 avc1".
+chrome (and also opera) supports a lot of codec's but if you don't specify a codec it will use "video/mp4 avc1".
 
 avc1 can't handle resolution changes during the recording , and that may happen if you record live streams.
 
