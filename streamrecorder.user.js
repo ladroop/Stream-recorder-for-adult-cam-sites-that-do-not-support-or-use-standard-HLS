@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Stream recorder for adult cam sites that do not support HLS
 // @namespace    Everywhere
-// @version      1.1.3
+// @version      1.1.4
 // @description  Record stripchat, livejasmin and other cam sites that do not full support HLS/m3u8
 // @author       Ladroop
 // @license	     MIT
@@ -20,6 +20,8 @@
 // @downloadURL https://update.sleazyfork.org/scripts/508891/Stream%20recorder%20for%20adult%20cam%20sites%20that%20do%20not%20support%20HLS.user.js
 // @updateURL https://update.sleazyfork.org/scripts/508891/Stream%20recorder%20for%20adult%20cam%20sites%20that%20do%20not%20support%20HLS.meta.js
 // ==/UserScript==
+
+
 
 (function() {
     'use strict';
@@ -79,7 +81,10 @@
 
     var mediaRecorder;
     var recordedBlobs=[];
+    var blob = new Blob([]);
+    var url = URL.createObjectURL(blob);
     var recname="";
+    var filename="";
     var stoppressed=false;
     var timerrecstop=false;
     var reconnect=false;
@@ -88,7 +93,6 @@
     var recparts=1;
     var recTimeoutID=0;
     var zeroData=0;
-
     var prectime=0;
     var bitrate=2500000;
     var mimeTypes=['video/mp4; codecs="avc3.64001F, mp4a.40.2"',
@@ -146,7 +150,6 @@
 
         if (site=="stripchat"){
             name=location.split("/")[3].split("?")[0];
-
         }
 
         if (site=="showup"){
@@ -268,7 +271,7 @@
         clearTimeout(recTimeoutID);
         var starttime="_"+new Date().toISOString().split(".")[0]+"GMT";
         starttime=starttime.replaceAll(":","-");
-        recname=recname+"_"+starttime;
+        filename=recname+"("+recparts+")-"+starttime;
         try {
             mediaRecorder.start(1000);
         } catch (e) {
@@ -339,16 +342,19 @@
         }
 
         msg("SAVING");
-        var blob = new Blob(recordedBlobs, {type: vidcontainers[mimeType]});
+        blob = new Blob(recordedBlobs, {type: vidcontainers[mimeType]});
+        URL.revokeObjectURL(url);
+        url = URL.createObjectURL(blob);
         GM_download({
-            url: blob,
-            name: recname+extentions[mimeType],
+            url: url,
+            name: filename+extentions[mimeType],
             onload: dlready,
         });
     }
 
     function dlready(){
         recordedBlobs=[];
+        blob = new Blob([]);
         if(stoppressed==false){
             recparts++;
             if (timerrecstop==false){
@@ -484,7 +490,6 @@
             savetime=200000;
         }
     }
-
     function codecset(){
         mimeType=0;
         if(document.getElementById("avc3").value==0){
